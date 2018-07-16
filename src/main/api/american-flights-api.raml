@@ -1,0 +1,45 @@
+#%RAML 1.0
+version: 1.0
+title: American Flights API
+baseUri: 
+
+
+
+types:
+  AmericanFlight: !include exchange_modules/68ef9520-24e9-4cf2-b2f5-620025690913/training-american-flight-data-type/1.0.1/AmericanFlightDataType.raml
+  AmericanFlight2: 
+    type: !include "schemas/american-flights-response-get-list.jsv"
+      
+#    response-schema: !include "classpath:schemas/american-flights-response.jsv"
+#  AmericanFlight2: !include exchange_modules/68ef9520-24e9-4cf2-b2f5-620025690913/training-american-flight-data-type/1.0.1/AmericanFlightDataType.raml
+  
+/flights:
+  get:
+    displayName: Get all flights
+    queryParameters: 
+      destination:
+        displayName: Destination airport code  
+        required: false
+        enum: [SFO, LAX, CLE]
+    responses: 
+      200:
+        body: 
+          application/json:
+            type: AmericanFlight[]
+            #schema: AmericanFlight2
+            example: !include exchange_modules/68ef9520-24e9-4cf2-b2f5-620025690913/training-american-flights-example/1.0.1/AmericanFlightsExample.raml
+  
+  post:
+     displayName: Add a flight
+     body:
+        application/json: 
+          type: AmericanFlight
+     responses: 
+        201:
+          body:
+            application/json: 
+              example: {
+                  "message": "Flight added (but not really)"
+                }
+        
+      

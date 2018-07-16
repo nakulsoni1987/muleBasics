@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:apikit="http://www.mulesoft.org/schema/mule/apikit" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/apikit http://www.mulesoft.org/schema/mule/apikit/current/mule-apikit.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
+    <file:connector name="File" outputPattern="American_flights_get.json" writeToDirectory="/Users/Maverick/My Server/Files" autoDelete="true" streaming="true" validateConnections="true" doc:name="File"/>
+
+<!--     <http:listener-config name="HTTP_Listener_Configuration" host="0.0.0.0" port="8081" doc:name="HTTP Listener Configuration"/>
+    <apikit:config name="Router" raml="american-flights-api.raml" consoleEnabled="true" consolePath="console" doc:name="Router"/>
+    <http:request-config name="HTTP_Request_Configuration" host="training-american-ws.cloudhub.io" basePath="/api" doc:name="HTTP Request Configuration" port="80"/>
+ -->    <flow name="americanFlow">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="*" doc:name="HTTP" allowedMethods="GET,POST"/>
+        <apikit:router config-ref="Router" doc:name="APIkit Router"/>
+        <!-- <apikit:router config-ref="" doc:name="APIkit Router"/> -->
+        
+    </flow>
+    <flow name="get:/flights">
+        <http:request config-ref="HTTP_Request_Configuration_Post" path="/flights" method="GET" doc:name="HTTP"/>
+        <byte-array-to-string-transformer doc:name="Byte Array to String"/>
+<!--         <echo-component doc:name="Echo"/> -->
+        <!-- <dw:transform-message doc:name="Transform Message" metadata:id="4f4bc812-7a00-42f6-a61d-f00af5acc309">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+
+"INSERT 3 - HERE"
+
+payload map ((datum , indexOfDatum) -> {
+	ID: datum.ID,
+	code: datum.code,
+	departureDate: datum.departur,
+	destination: datum.destination,
+	emptySeats: datum.emptySeats,
+	origin: datum.origin,
+	plane: datum.plane,
+	price: datum.price
+})]]></dw:set-payload>
+        </dw:transform-message>
+         
+        <email:bytes-to-mime-transformer encoding="UTF-8" mimeType="application/json" doc:name="Byte Array to MIME"/>
+-->
+        <logger level="INFO" doc:name="Logger" message="#Payload: #[message.payload], ${sampleValue}"/>
+        <file:outbound-endpoint path="/Users/Maverick/My Server/Files" outputPattern="American_flights_get.json" connector-ref="File" responseTimeout="10000" doc:name="File"/>
+    </flow>
+    <flow name="post:/flights">
+        <http:request config-ref="HTTP_Request_Configuration_Post" path="/flights" method="POST" doc:name="HTTP"/>
+        <logger message="test: #[message.payload]" level="INFO" doc:name="Logger"/>
+        <byte-array-to-string-transformer doc:name="Byte Array to String"/>
+        <logger level="INFO" doc:name="Logger" message="#Payload: #[message.payload], ${sampleValue}"/>
+    </flow>
+</mule>
